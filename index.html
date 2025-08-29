@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rüya Dünyası Oluşturucu | Dream World Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="title">✨ Rüya Dünyası Oluşturucu</h1>
+            <p class="subtitle">Hayal gücünüzü gerçeğe dönüştürün</p>
+        </header>
+
+        <main class="main-content">
+            <form id="dreamForm" class="dream-form">
+                <div class="form-section">
+                    <h2>🎨 Rüya Detaylarınız</h2>
+                    
+                    <div class="input-group">
+                        <label for="ad">👤 Adınız</label>
+                        <input type="text" id="ad" name="ad" placeholder="Adınızı girin" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="renkler">🎨 Favori Renkler</label>
+                        <input type="text" id="renkler" name="renkler" placeholder="Örn: mor, gece mavisi, altın sarısı" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="mekanlar">🏞️ Favori Ortamlar / Mekanlar</label>
+                        <input type="text" id="mekanlar" name="mekanlar" placeholder="Örn: uçan adalar, gizemli orman, kristal mağara" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="atmosfer">🌙 Favori Atmosfer / Duygu</label>
+                        <input type="text" id="atmosfer" name="atmosfer" placeholder="Örn: gizemli ve huzurlu, büyülü ve neşeli" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="karakterler">🦋 Hayalinizdeki Karakterler</label>
+                        <input type="text" id="karakterler" name="karakterler" placeholder="Örn: büyülü tilki, ışık saçan kelebekler, ejder" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="detaylar">✨ Özel Detaylar</label>
+                        <input type="text" id="detaylar" name="detaylar" placeholder="Örn: parlayan nehirler, yavaşça kayan yıldızlar" required>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="submitBtn">
+                        <span class="btn-text">🌟 Rüya Dünyamı Oluştur</span>
+                        <div class="loading-spinner" style="display: none;"></div>
+                    </button>
+                </div>
+            </form>
+
+            <div class="result-section" id="resultSection" style="display: none;">
+                <h2>🎭 Rüya Dünyanız</h2>
+                <div class="image-container">
+                    <img id="resultImage" alt="Oluşturulan rüya dünyası" style="display: none;">
+                    <div class="image-placeholder" id="imagePlaceholder">
+                        <div class="placeholder-content">
+                            <div class="placeholder-icon">🎨</div>
+                            <p>Rüya dünyanız oluşturuluyor...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="image-actions" style="display: none;" id="imageActions">
+                    <button type="button" class="action-btn" onclick="downloadImage()">📥 İndir</button>
+                    <button type="button" class="action-btn" onclick="shareImage()">📤 Paylaş</button>
+                    <button type="button" class="action-btn secondary" onclick="createNewDream()">🔄 Yeni Rüya</button>
+                </div>
+            </div>
+
+            <div class="error-section" id="errorSection" style="display: none;">
+                <div class="error-message">
+                    <h3>⚠️ Bir hata oluştu</h3>
+                    <p id="errorText">Lütfen tekrar deneyin.</p>
+                    <button type="button" class="action-btn" onclick="resetForm()">🔄 Tekrar Dene</button>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>n8n Otomasyon ile güçlendirilmiştir | AI destekli rüya oluşturucu</p>
+            <p><small>Webhook: <span id="webhookUrl"></span></small></p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

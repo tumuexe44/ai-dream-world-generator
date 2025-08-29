@@ -1,0 +1,260 @@
+{
+  "name": "Dream World Generator - AI Agent Powered",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dream-generator",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "dream-webhook-id"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Form verisini temizle ve hazırla\nconst webhookData = items[0];\n\n// Debug logging\nconsole.log('Webhook data received:', JSON.stringify(webhookData, null, 2));\n\n// Form verisini al\nlet inputData;\nif (webhookData.body && typeof webhookData.body === 'object' && Object.keys(webhookData.body).length > 0) {\n  inputData = webhookData.body;\n} else if (webhookData.json && typeof webhookData.json === 'object' && Object.keys(webhookData.json).length > 0) {\n  inputData = webhookData.json;\n} else {\n  throw new Error('Form verisi bulunamadı.');\n}\n\n// Gereksiz alanları temizle\nif (inputData.webhookUrl) delete inputData.webhookUrl;\nif (inputData.executionMode) delete inputData.executionMode;\n\nconsole.log('Cleaned form data:', JSON.stringify(inputData, null, 2));\n\n// Basit validasyon\nconst requiredFields = ['ad', 'renkler', 'mekanlar', 'atmosfer', 'karakterler', 'detaylar'];\nconst missingFields = [];\n\nfor (const field of requiredFields) {\n  if (!inputData[field] || typeof inputData[field] !== 'string' || inputData[field].trim().length === 0) {\n    missingFields.push(field);\n  }\n}\n\nif (missingFields.length > 0) {\n  throw new Error(`Eksik alanlar: ${missingFields.join(', ')}`);\n}\n\n// Verileri temizle\nfor (const field of requiredFields) {\n  inputData[field] = inputData[field].trim();\n}\n\nconsole.log('Validation passed for user:', inputData.ad);\n\n// AI Agent için Turkish prompt hazırla\nconst turkishPrompt = `Sen bir AI görsel sanatçısısın. Aşağıdaki Türkçe rüya tarifini, DALL-E 3 için mükemmel bir İngilizce prompt'a çevir. Çok detaylı, sanatsal ve büyüleyici bir prompt oluştur.\n\nKullanıcı Bilgileri:\n- Ad: ${inputData.ad}\n- Favori Renkler: ${inputData.renkler}\n- Favori Mekanlar: ${inputData.mekanlar} \n- Atmosfer/Duygu: ${inputData.atmosfer}\n- Karakterler: ${inputData.karakterler}\n- Özel Detaylar: ${inputData.detaylar}\n\nLütfen bu bilgileri kullanarak fantastik, sürreal ve büyülü bir rüya dünyası prompt'u oluştur. Prompt İngilizce olmalı ve DALL-E 3 için optimize edilmiş olmalı. Cinematic lighting, photorealistic, 8K resolution gibi teknik terimler ekle.\n\nSadece prompt'u döndür, başka hiçbir açıklama yapma.`;\n\nreturn [{\n  json: {\n    user_name: inputData.ad,\n    turkish_prompt: turkishPrompt,\n    original_form_data: inputData,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "data-processor",
+      "name": "Data Processor",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "model": "gemini-1.5-flash",
+        "options": {
+          "temperature": 0.7,
+          "maxTokens": 500
+        },
+        "text": "={{ $json.turkish_prompt }}"
+      },
+      "id": "gemini-prompt-generator",
+      "name": "Gemini Prompt Generator",
+      "type": "n8n-nodes-base.googleGemini",
+      "typeVersion": 1,
+      "position": [680, 300],
+      "credentials": {
+        "googleGeminiApi": {
+          "id": "google-gemini-api",
+          "name": "Google Gemini API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "// Gemini'den gelen prompt'u temizle ve hazırla\nconst userData = items[0].json;\nconst geminiResponse = items[1].json;\n\nconsole.log('User data:', JSON.stringify(userData, null, 2));\nconsole.log('Gemini response:', JSON.stringify(geminiResponse, null, 2));\n\n// Gemini'den gelen prompt'u al\nlet optimizedPrompt;\nif (geminiResponse.message && geminiResponse.message.content) {\n  optimizedPrompt = geminiResponse.message.content;\n} else if (geminiResponse.text) {\n  optimizedPrompt = geminiResponse.text;\n} else if (typeof geminiResponse === 'string') {\n  optimizedPrompt = geminiResponse;\n} else {\n  throw new Error('Gemini response format tanınmıyor');\n}\n\n// Prompt'u temizle - gereksiz karakterleri kaldır\noptimizedPrompt = optimizedPrompt\n  .replace(/```[\\s\\S]*?```/g, '') // Code blocks\n  .replace(/\\*\\*.*?\\*\\*/g, '') // Bold text\n  .replace(/\\*.*?\\*/g, '') // Italic text\n  .replace(/#{1,6}\\s+/g, '') // Headers\n  .replace(/^[-\\*\\+]\\s+/gm, '') // List items\n  .replace(/\\n{2,}/g, ' ') // Multiple newlines\n  .replace(/\\s{2,}/g, ' ') // Multiple spaces\n  .trim();\n\nconsole.log('Optimized prompt from Gemini:', optimizedPrompt);\n\n// DALL-E 3 için ekstra optimizasyon\nif (!optimizedPrompt.toLowerCase().includes('8k') && !optimizedPrompt.toLowerCase().includes('4k')) {\n  optimizedPrompt += ', 8K resolution';\n}\nif (!optimizedPrompt.toLowerCase().includes('cinematic')) {\n  optimizedPrompt += ', cinematic lighting';\n}\nif (!optimizedPrompt.toLowerCase().includes('detailed')) {\n  optimizedPrompt += ', highly detailed';\n}\n\nconsole.log('Final DALL-E optimized prompt:', optimizedPrompt);\n\nreturn [{\n  json: {\n    gorselPrompt: optimizedPrompt,\n    user_name: userData.user_name,\n    original_form_data: userData.original_form_data,\n    metadata: {\n      prompt_created_at: new Date().toISOString(),\n      ai_agent_used: 'Google Gemini',\n      original_turkish_prompt: userData.turkish_prompt,\n      gemini_raw_response: geminiResponse\n    }\n  }\n}];"
+      },
+      "id": "prompt-optimizer",
+      "name": "Prompt Optimizer",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.openai.com/v1/images/generations",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyContentType": "json",
+        "jsonBody": "={\n  \"model\": \"dall-e-3\",\n  \"prompt\": \"{{ $json.gorselPrompt }}\",\n  \"n\": 1,\n  \"size\": \"1024x1024\",\n  \"quality\": \"hd\",\n  \"style\": \"vivid\",\n  \"response_format\": \"url\"\n}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "dalle-image-generation",
+      "name": "DALL-E 3 Image Generation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Final response hazırla\nconst promptData = items[0].json;\nconst dalleResponse = items[1].json;\n\nconsole.log('Final processing for user:', promptData.user_name);\nconsole.log('DALL-E Response:', JSON.stringify(dalleResponse, null, 2));\n\n// DALL-E yanıtından image URL'i al\nlet imageUrl = '';\nif (dalleResponse.data && dalleResponse.data[0] && dalleResponse.data[0].url) {\n  imageUrl = dalleResponse.data[0].url;\n  console.log('Image generated successfully:', imageUrl);\n} else {\n  console.error('DALL-E Response Error:', dalleResponse);\n  throw new Error('DALL-E servisinden görsel alınamadı');\n}\n\n// URL doğrulama\nif (!imageUrl.startsWith('http')) {\n  throw new Error(`Geçersiz görsel URL: ${imageUrl}`);\n}\n\n// Success response\nconst successResponse = {\n  success: true,\n  image_url: imageUrl,\n  user_name: promptData.user_name,\n  prompt_used: promptData.gorselPrompt,\n  ai_services_used: {\n    prompt_generation: 'Google Gemini',\n    image_generation: 'OpenAI DALL-E 3'\n  },\n  generated_at: new Date().toISOString(),\n  original_form_data: promptData.original_form_data,\n  metadata: promptData.metadata\n};\n\nconsole.log('Dream generation completed successfully for:', promptData.user_name);\n\nreturn [{\n  json: successResponse\n}];"
+      },
+      "id": "response-formatter",
+      "name": "Response Formatter",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "responseHeaders": {
+          "entries": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Access-Control-Allow-Origin",
+              "value": "*"
+            },
+            {
+              "name": "Access-Control-Allow-Methods",
+              "value": "POST, OPTIONS"
+            },
+            {
+              "name": "Access-Control-Allow-Headers",
+              "value": "Content-Type"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "webhook-response",
+      "name": "Webhook Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1560, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Error handling\nconst error = items[0].error || items[0].json?.error || 'Bilinmeyen hata';\nconst originalData = items[0].json || {};\n\nconsole.error('Workflow error:', error);\n\nlet errorMessage = 'Bir hata oluştu. Lütfen tekrar deneyin.';\nlet errorCode = 'GENERAL_ERROR';\n\nif (error && error.message) {\n  const errorMsg = error.message.toLowerCase();\n  \n  if (errorMsg.includes('eksik') || errorMsg.includes('missing')) {\n    errorMessage = 'Form verileri eksik. Lütfen tüm alanları doldurun.';\n    errorCode = 'VALIDATION_ERROR';\n  } else if (errorMsg.includes('gemini') || errorMsg.includes('prompt')) {\n    errorMessage = 'Prompt oluşturma hatası. Lütfen tekrar deneyin.';\n    errorCode = 'AI_PROMPT_ERROR';\n  } else if (errorMsg.includes('dall-e') || errorMsg.includes('image')) {\n    errorMessage = 'Görsel oluşturma hatası. Lütfen tekrar deneyin.';\n    errorCode = 'IMAGE_GENERATION_ERROR';\n  } else if (errorMsg.includes('quota') || errorMsg.includes('limit')) {\n    errorMessage = 'Servis limiti aşıldı. Lütfen daha sonra tekrar deneyin.';\n    errorCode = 'RATE_LIMIT_ERROR';\n  }\n}\n\nconst errorResponse = {\n  success: false,\n  error: errorMessage,\n  error_code: errorCode,\n  timestamp: new Date().toISOString(),\n  ai_services_attempted: ['Google Gemini', 'OpenAI DALL-E 3'],\n  debug_info: {\n    original_error: error.message || error\n  }\n};\n\nconsole.error('Sending error response:', JSON.stringify(errorResponse, null, 2));\n\nreturn [{\n  json: errorResponse\n}];"
+      },
+      "id": "error-handler",
+      "name": "Error Handler",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1340, 500]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "responseCode": 400,
+        "responseHeaders": {
+          "entries": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Access-Control-Allow-Origin",
+              "value": "*"
+            },
+            {
+              "name": "Access-Control-Allow-Methods",
+              "value": "POST, OPTIONS"
+            },
+            {
+              "name": "Access-Control-Allow-Headers",
+              "value": "Content-Type"
+            }
+          ]
+        }
+      },
+      "id": "error-response",
+      "name": "Error Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1560, 500]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Data Processor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Processor": {
+      "main": [
+        [
+          {
+            "node": "Gemini Prompt Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini Prompt Generator": {
+      "main": [
+        [
+          {
+            "node": "Prompt Optimizer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prompt Optimizer": {
+      "main": [
+        [
+          {
+            "node": "DALL-E 3 Image Generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DALL-E 3 Image Generation": {
+      "main": [
+        [
+          {
+            "node": "Response Formatter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Response Formatter": {
+      "main": [
+        [
+          {
+            "node": "Webhook Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "errorWorkflow": {
+      "errorWorkflow": "error-handler"
+    },
+    "timezone": "Europe/Istanbul",
+    "saveManualExecutions": true
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "id": "ai-agent-powered",
+      "name": "AI Agent Powered"
+    },
+    {
+      "id": "gemini-dalle",
+      "name": "Gemini + DALL-E"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2024-01-01T12:00:00.000Z",
+  "versionId": "4"
+}

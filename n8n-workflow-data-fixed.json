@@ -1,0 +1,207 @@
+{
+  "name": "Dream World Generator - Data Structure Fixed",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dream-generator",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "dream-webhook-id"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Gelen webhook verilerini kontrol et ve AI prompt oluştur\nconst webhookData = items[0];\n\n// Debug: Webhook yapısını tamamen logla\nconsole.log('=== WEBHOOK DEBUG INFO ===');\nconsole.log('Full webhook structure:', JSON.stringify(webhookData, null, 2));\nconsole.log('webhookData.json:', webhookData.json);\nconsole.log('webhookData.body:', webhookData.body);\nconsole.log('webhookData.params:', webhookData.params);\n\n// Form verisini doğru yerden al - multiple fallback locations\nlet inputData;\nif (webhookData.body && typeof webhookData.body === 'object' && Object.keys(webhookData.body).length > 0) {\n  inputData = webhookData.body;\n  console.log('Using data from webhookData.body');\n} else if (webhookData.json && typeof webhookData.json === 'object' && Object.keys(webhookData.json).length > 0) {\n  inputData = webhookData.json;\n  console.log('Using data from webhookData.json');\n} else if (webhookData.params && webhookData.params.body) {\n  inputData = webhookData.params.body;\n  console.log('Using data from webhookData.params.body');\n} else {\n  console.error('Form verisi bulunamadı. Available webhook properties:');\n  console.error('Keys:', Object.keys(webhookData));\n  console.error('Body type:', typeof webhookData.body);\n  console.error('JSON type:', typeof webhookData.json);\n  throw new Error('Form verisi bulunamadı. Webhook yapısı beklenmeyen format.');\n}\n\n// Debug: İşlenecek veriyi logla\nconsole.log('Processing form data:', JSON.stringify(inputData, null, 2));\nconsole.log('Form data type:', typeof inputData);\nconsole.log('Form data keys:', Object.keys(inputData));\n\n// Eğer webhookUrl ve executionMode varsa, bunları kaldır (bunlar form verisi değil)\nif (inputData.webhookUrl) {\n  delete inputData.webhookUrl;\n  console.log('Removed webhookUrl from form data');\n}\nif (inputData.executionMode) {\n  delete inputData.executionMode;\n  console.log('Removed executionMode from form data');\n}\n\nconsole.log('Cleaned form data:', JSON.stringify(inputData, null, 2));\n\n// Veri doğrulama - boş string ve whitespace kontrolü\nconst requiredFields = ['ad', 'renkler', 'mekanlar', 'atmosfer', 'karakterler', 'detaylar'];\nconst missingFields = [];\nconst errors = [];\n\nconsole.log('Starting validation...');\nfor (const field of requiredFields) {\n  console.log(`Checking field '${field}':`, inputData[field]);\n  \n  if (!inputData[field]) {\n    missingFields.push(field);\n    errors.push(`${field} alanı eksik`);\n    console.log(`✗ Field '${field}' is missing or falsy`);\n  } else if (typeof inputData[field] !== 'string') {\n    errors.push(`${field} string olmalı`);\n    console.log(`✗ Field '${field}' is not a string:`, typeof inputData[field]);\n  } else if (inputData[field].trim().length === 0) {\n    missingFields.push(field);\n    errors.push(`${field} alanı boş`);\n    console.log(`✗ Field '${field}' is empty after trim`);\n  } else if (inputData[field].trim().length < 2) {\n    errors.push(`${field} en az 2 karakter olmalı`);\n    console.log(`✗ Field '${field}' is too short:`, inputData[field].trim().length);\n  } else {\n    console.log(`✓ Field '${field}' is valid:`, inputData[field]);\n  }\n}\n\nif (errors.length > 0) {\n  const errorMsg = `Form validation failed: ${errors.join(', ')}. Missing fields: ${missingFields.join(', ')}`;\n  console.error('VALIDATION FAILED:', errorMsg);\n  throw new Error(errorMsg);\n}\n\n// Tüm alanları trim et\nfor (const field of requiredFields) {\n  inputData[field] = inputData[field].trim();\n}\n\nconsole.log('✓ Validation passed for user:', inputData.ad);\nconsole.log('Final cleaned data:', JSON.stringify(inputData, null, 2));\n\n// Türkçe karakterleri İngilizce prompt için optimize et\nconst translateToEnglish = {\n  'mor': 'purple', 'mavi': 'blue', 'yeşil': 'green', 'kırmızı': 'red',\n  'sarı': 'yellow', 'turuncu': 'orange', 'pembe': 'pink', 'siyah': 'black',\n  'beyaz': 'white', 'gri': 'gray', 'altın': 'golden', 'gümüş': 'silver',\n  'eflatun': 'lavender', 'gece mavisi': 'midnight blue',\n  'orman': 'forest', 'göl': 'lake', 'dağ': 'mountain', 'deniz': 'sea',\n  'şehir': 'city', 'mağara': 'cave', 'ada': 'island', 'köprü': 'bridge',\n  'kale': 'castle', 'bahçe': 'garden', 'uçan adalar': 'floating islands',\n  'kristal mağara': 'crystal cave', 'gizemli orman': 'mysterious forest',\n  'bulut şehri': 'cloud city',\n  'ejder': 'dragon', 'unicorn': 'unicorn', 'peri': 'fairy', 'tilki': 'fox',\n  'kelebek': 'butterfly', 'kuş': 'bird', 'balık': 'fish',\n  'büyülü tilki': 'magical fox', 'ışık saçan kelebekler': 'glowing butterflies',\n  'huzurlu': 'peaceful', 'gizemli': 'mysterious', 'büyülü': 'magical',\n  'neşeli': 'joyful', 'sakin': 'calm', 'enerjik': 'energetic',\n  'romantik': 'romantic', 'hüzünlü': 'melancholic',\n  'yıldız': 'star', 'ay': 'moon', 'güneş': 'sun', 'çiçek': 'flower',\n  'ağaç': 'tree', 'nehir': 'river', 'şelale': 'waterfall', 'kristal': 'crystal',\n  'parlayan nehirler': 'glowing rivers', 'yavaşça kayan yıldızlar': 'slowly moving stars',\n  'ışıldayan kristaller': 'sparkling crystals'\n};\n\n// Basit çeviri fonksiyonu\nfunction translateText(text) {\n  if (!text || typeof text !== 'string') return '';\n  let translated = text.toLowerCase();\n  for (const [turkish, english] of Object.entries(translateToEnglish)) {\n    translated = translated.replace(new RegExp(turkish, 'gi'), english);\n  }\n  return translated;\n}\n\n// AI için optimize edilmiş prompt oluştur\nconst translatedColors = translateText(inputData.renkler);\nconst translatedPlaces = translateText(inputData.mekanlar);\nconst translatedAtmosphere = translateText(inputData.atmosfer);\nconst translatedCharacters = translateText(inputData.karakterler);\nconst translatedDetails = translateText(inputData.detaylar);\n\nconst gorselPrompt = `A highly detailed, surreal dreamscape inspired by ${translatedPlaces}, featuring ${translatedCharacters}, in a ${translatedAtmosphere} mood, with dominant colors ${translatedColors}, including special details like ${translatedDetails}, cinematic lighting, photorealistic, 8K resolution, fantasy art style, professional digital art, magical atmosphere`;\n\n// Ek metadata\nconst metadata = {\n  user_name: inputData.ad,\n  prompt_created_at: new Date().toISOString(),\n  original_data: inputData,\n  translated_prompt: gorselPrompt,\n  validation_passed: true,\n  webhook_structure_used: 'body'\n};\n\nconsole.log('Generated prompt for', inputData.ad + ':', gorselPrompt);\n\n// Çıktı verisini hazırla\nreturn [{\n  json: {\n    gorselPrompt: gorselPrompt,\n    metadata: metadata,\n    user_name: inputData.ad,\n    original_colors: inputData.renkler,\n    original_places: inputData.mekanlar,\n    original_atmosphere: inputData.atmosfer,\n    original_characters: inputData.karakterler,\n    original_details: inputData.detaylar\n  }\n}];"
+      },
+      "id": "prompt-generator",
+      "name": "Prompt Generator (Data Fixed)",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.openai.com/v1/images/generations",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyContentType": "json",
+        "jsonBody": "={\n  \"model\": \"dall-e-3\",\n  \"prompt\": \"{{ $json.gorselPrompt }}\",\n  \"n\": 1,\n  \"size\": \"1024x1024\",\n  \"quality\": \"standard\",\n  \"response_format\": \"url\"\n}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "openai-image-generation",
+      "name": "OpenAI DALL-E 3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "// AI servis yanıtını işle ve standardize et\nconst promptData = items[0].json;\nconst aiResponse = items[1].json;\n\nconsole.log('Processing AI response for user:', promptData.user_name);\nconsole.log('AI Response received:', JSON.stringify(aiResponse, null, 2));\n\nlet imageUrl = '';\nlet aiService = '';\n\n// OpenAI DALL-E response format kontrol\nif (aiResponse.data && aiResponse.data[0] && aiResponse.data[0].url) {\n  imageUrl = aiResponse.data[0].url;\n  aiService = 'OpenAI DALL-E 3';\n  console.log('OpenAI image generated:', imageUrl);\n}\n// Gemini Imagen response format kontrol\nelse if (aiResponse.candidates && aiResponse.candidates[0] && aiResponse.candidates[0].imageUri) {\n  imageUrl = aiResponse.candidates[0].imageUri;\n  aiService = 'Google Gemini Imagen';\n  console.log('Gemini image generated:', imageUrl);\n}\n// Hata durumu\nelse {\n  console.error('AI Response Error:', aiResponse);\n  const errorDetail = aiResponse.error ? aiResponse.error.message : 'Unknown AI service error';\n  throw new Error(`AI servisinden görsel alınamadı: ${errorDetail}`);\n}\n\n// URL geçerliliği kontrol\nif (!imageUrl || !imageUrl.startsWith('http')) {\n  throw new Error(`Geçersiz görsel URL formatı: ${imageUrl}`);\n}\n\n// Success response hazırla\nconst successResponse = {\n  success: true,\n  image_url: imageUrl,\n  user_name: promptData.user_name,\n  prompt_used: promptData.gorselPrompt,\n  ai_service: aiService,\n  generated_at: new Date().toISOString(),\n  original_form_data: {\n    ad: promptData.user_name,\n    renkler: promptData.original_colors,\n    mekanlar: promptData.original_places,\n    atmosfer: promptData.original_atmosphere,\n    karakterler: promptData.original_characters,\n    detaylar: promptData.original_details\n  },\n  metadata: promptData.metadata || {}\n};\n\nconsole.log('Dream successfully generated for:', promptData.user_name);\n\nreturn [{\n  json: successResponse\n}];"
+      },
+      "id": "response-formatter",
+      "name": "Response Formatter",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "responseHeaders": {
+          "entries": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Access-Control-Allow-Origin",
+              "value": "*"
+            },
+            {
+              "name": "Access-Control-Allow-Methods",
+              "value": "POST, OPTIONS"
+            },
+            {
+              "name": "Access-Control-Allow-Headers",
+              "value": "Content-Type"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "webhook-response",
+      "name": "Webhook Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Hata yakalama ve kullanıcı dostu mesaj oluşturma\nconst error = items[0].error || items[0].json?.error || 'Bilinmeyen hata';\nconst originalData = items[0].json || {};\n\nconsole.error('Error occurred in workflow:', error);\nconsole.log('Original data when error occurred:', JSON.stringify(originalData, null, 2));\n\n// Hata tipine göre mesaj belirleme\nlet errorMessage = 'Bir hata oluştu. Lütfen tekrar deneyin.';\nlet errorCode = 'GENERAL_ERROR';\n\nif (error && error.message) {\n  const errorMsg = error.message.toLowerCase();\n  \n  if (errorMsg.includes('validation') || errorMsg.includes('eksik') || errorMsg.includes('missing')) {\n    errorMessage = 'Form verileri eksik veya hatalı. Lütfen tüm alanları doldurun.';\n    errorCode = 'VALIDATION_ERROR';\n  } else if (errorMsg.includes('timeout') || errorMsg.includes('network')) {\n    errorMessage = 'Bağlantı zaman aşımına uğradı. Lütfen tekrar deneyin.';\n    errorCode = 'TIMEOUT_ERROR';\n  } else if (errorMsg.includes('rate limit') || errorMsg.includes('quota')) {\n    errorMessage = 'Çok fazla istek gönderildi. Lütfen birkaç dakika bekleyip tekrar deneyin.';\n    errorCode = 'RATE_LIMIT_ERROR';\n  } else if (errorMsg.includes('api key') || errorMsg.includes('unauthorized')) {\n    errorMessage = 'Servis geçici olarak kullanılamıyor. Lütfen daha sonra tekrar deneyin.';\n    errorCode = 'API_ERROR';\n  } else if (errorMsg.includes('prompt') || errorMsg.includes('content')) {\n    errorMessage = 'İçerik uygun değil. Lütfen farklı kelimeler kullanarak tekrar deneyin.';\n    errorCode = 'CONTENT_ERROR';\n  } else {\n    errorMessage = `Hata: ${error.message}`;\n  }\n} else if (typeof error === 'string') {\n  errorMessage = error;\n}\n\n// Error response hazırla\nconst errorResponse = {\n  success: false,\n  error: errorMessage,\n  error_code: errorCode,\n  timestamp: new Date().toISOString(),\n  user_name: originalData.user_name || originalData.ad || 'Bilinmeyen',\n  debug_info: {\n    original_error: error.message || error,\n    received_data: originalData,\n    webhook_structure: 'Check n8n execution logs for webhook data structure'\n  }\n};\n\nconsole.error('Sending error response:', JSON.stringify(errorResponse, null, 2));\n\nreturn [{\n  json: errorResponse\n}];"
+      },
+      "id": "error-handler",
+      "name": "Error Handler",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [900, 500]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "responseCode": 400,
+        "responseHeaders": {
+          "entries": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Access-Control-Allow-Origin",
+              "value": "*"
+            },
+            {
+              "name": "Access-Control-Allow-Methods",
+              "value": "POST, OPTIONS"
+            },
+            {
+              "name": "Access-Control-Allow-Headers",
+              "value": "Content-Type"
+            }
+          ]
+        }
+      },
+      "id": "error-response",
+      "name": "Error Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1120, 500]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Prompt Generator (Data Fixed)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prompt Generator (Data Fixed)": {
+      "main": [
+        [
+          {
+            "node": "OpenAI DALL-E 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI DALL-E 3": {
+      "main": [
+        [
+          {
+            "node": "Response Formatter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Response Formatter": {
+      "main": [
+        [
+          {
+            "node": "Webhook Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "errorWorkflow": {
+      "errorWorkflow": "error-handler"
+    },
+    "timezone": "Europe/Istanbul",
+    "saveManualExecutions": true
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "id": "dream-generator",
+      "name": "Dream Generator"
+    },
+    {
+      "id": "data-structure-fixed",
+      "name": "Data Structure Fixed"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2024-01-01T12:00:00.000Z",
+  "versionId": "3"
+}
