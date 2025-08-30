@@ -1,101 +1,94 @@
-# 🌟 AI-Powered Dream World Generator | Yapay Zeka Destekli Rüya Dünyası Oluşturucu
+# 🌟 AI-Powered Dream World Generator
 
-**Gelişmiş AI Agent teknolojisi** ile rüya dünyanızı oluşturun! Türkçe hayal gücünüzü **Gemini AI** ile İngilizce sanata dönüştürür, **DALL-E 3** ile benzersiz görsel sanat eserleri yaratır.
+Create your dream world with **Advanced AI Agent technology**! It transforms your Turkish imagination into English art with **Gemini AI** and creates unique visual artworks with **DALL-E 3**.
 
-## 🎯 Özellikler
+## 🎯 Features
 
-- 🤖 **AI Agent Powered**: Gemini AI ile akıllı prompt oluşturma
-- 🎨 **İki Katmanlı AI**: Gemini + DALL-E 3 entegrasyonu
-- 🌙 **Türkçe Arayüz**: Tam Türkçe kullanıcı deneyimi
-- 📱 **Responsive Tasarım**: Mobil ve masaüstü uyumlu
-- ⚡ **Akıllı Çeviri**: AI destekli Türkçe-İngilizce dönüşüm
-- 💾 **Görsel İndirme**: Oluşturulan görselleri kaydetme
-- 🔄 **Akıllı Hata Yönetimi**: Kullanıcı dostu hata mesajları
-- 🎭 **Kişiselleştirilmiş Sonuçlar**: Her kullanıcı için benzersiz promptlar
+- **AI Agent Powered**: Smart prompt creation with Gemini AI
+- 🎨 **Two Layer AI**: Gemini + DALL-E 3 integration
+- **Turkish Interface**: Full Turkish user experience
+- **Responsive Design**: Mobile and desktop compatible
+- **Smart Translation**: AI assisted Turkish-English conversion
+- 💾 **Image Download**: Saving created images
+- 🔄 **Intelligent Error Management**: User-friendly error messages
+- **Personalised Results**: Unique prompts for each user
 
-## 🚀 Hızlı Başlangıç
+## 🚀 Quick Start
 
-### 1. Dosyaları İndirin
-```bash
+### 1. Download Files
+``bash
 git clone [repository-url]
 cd dream-world-generator
 ```
 
-### 2. Web Sunucusu Başlatın
-```bash
-# Python ile (önerilen)
+### 2. Start Web Server
+``bash
+# with Python (recommended)
 python -m http.server 8000
 
-# PHP ile
+# PHP with
 php -S localhost:8000
 
-# Node.js ile
+#
 npx http-server
-```
+ with Node.js
 
-### 3. Tarayıcıda Açın
+### Open in browser
 ```
 http://localhost:8000
 ```
 
-## 📁 Proje Yapısı
+## 📁 Project Structure
 
 ```
 dream-world-generator/
-├── index.html              # Ana HTML sayfası
-├── style.css               # CSS stilleri
-├── script.js               # JavaScript fonksiyonları
-├── QODER_WORKFLOW_SETUP.md  # Qoder automation rehberi
-└── README.md               # Bu dosya
+├── index.html # Main HTML page
+├── style.css # CSS styles
+├── script.js # JavaScript functions
+├── QODER_WORKFLOW_SETUP.md # Qoder automation guide
+└─── README.md # This file
 ```
 
-## 🔧 Kurulum ve Yapılandırma
+## Installation and Configuration
 
 ### Qoder Webhook Integration
 
-1. **script.js** dosyasını açın
-2. `QODER_WEBHOOK_URL` değişkenini güncelleyin:
-```javascript
+1. Open the **script.js** file
+2. Update the `QODER_WEBHOOK_URL` variable:
+``javascript
 const QODER_WEBHOOK_URL = 'https://your-qoder-webhook-url';
 ```
 
-3. Qoder workflow'unu kurmak için `QODER_WORKFLOW_SETUP.md` dosyasını takip edin
+3. Follow the file `QODER_WORKFLOW_SETUP.md` to install the Qoder workflow
 
-### Demo Modu
 
-Webhook yapılandırması yapmadan test etmek için:
-- Webhook URL'ini değiştirmeyin (`YOUR_QODER_WEBHOOK_URL` olarak bırakın)
-- Uygulama otomatik olarak demo görsellerle çalışacak
-
-## 🎨 Kullanım
-
-### 1. Form Doldurma
-Kullanıcılar aşağıdaki bilgileri girer:
-- **Ad**: Kişisel tanımlama
-- **Favori Renkler**: Görsel ton paleti
-- **Favori Mekanlar**: Sahne ve ortam
-- **Atmosfer**: Duygu ve mood
-- **Karakterler**: Figür ve varlıklar
-- **Özel Detaylar**: Benzersiz öğeler
-
-### 2. AI İşleme
-- Form verileri Qoder webhook'a gönderilir
-- AI prompt otomatik oluşturulur
-- Gemini/DALL-E ile görsel üretilir
-- Sonuç kullanıcıya gösterilir
-
-### 3. Sonuç İşlemleri
-- Görseli indirme
-- Sosyal medyada paylaşma
-- Yeni rüya oluşturma
-
-## 🔌 API Entegrasyonu
-
+#### Demo Mode
+To test without configuring the webhook:
+- Do not change the webhook URL (leave it as `YOUR_QODER_WEBHOOK_URL`)
+- The application will automatically work with demo images
+## 🎨 Use
+### 1. Form Filling
+Users enter the following information:
+- **Name**: Personal Identification
+- **Favourite Colours**: Visual tone palette
+- **Favourite Venues**: Stage and ambience
+- **Atmosphere**: Emotion and mood
+- **Characters**: Figures and assets
+- **Special Details**: Unique items
+### 2. AI Processing
+- Form data is sent to the Qoder webhook
+- AI prompt is generated automatically
+- Image generated with Gemini/DALL-E
+- The result is displayed to the user
+### 3. Result Transactions
+- Download the image
+- Sharing on social media
+- Creating a new dream
+## 🔌 API Integration
 ### Webhook Endpoint
 ```http
 POST YOUR_WEBHOOK_URL
 Content-Type: application/json
-
 {
   "ad": "Emily",
   "renkler": "mor, gece mavisi",
@@ -106,7 +99,7 @@ Content-Type: application/json
 }
 ```
 
-### Beklenen Response
+### Expected response
 ```json
 {
   "success": true,
@@ -116,7 +109,7 @@ Content-Type: application/json
 }
 ```
 
-### Hata Response
+### Error Response
 ```json
 {
   "success": false,
@@ -125,58 +118,58 @@ Content-Type: application/json
 }
 ```
 
-## 🎯 Qoder Workflow Adımları
+## 🎯 Qoder Workflow Steps
 
-1. **Webhook Trigger**: Form verilerini al
-2. **Function Node**: AI prompt oluştur
-3. **HTTP Request**: AI servisine gönder
+1. **Webhook Trigger**: Get form data
+2. **Function Node**: Generate AI prompt
+3. **HTTP Request**: Send to AI service
 4. **Function Node**: Response formatla
-5. **Response Node**: Sonucu geri gönder
+5. **Response Node**: Send result back
 
-Detaylı kurulum için: [QODER_WORKFLOW_SETUP.md](QODER_WORKFLOW_SETUP.md)
+For detailed installation: [QODER_WORKFLOW_SETUP.md](QODER_WORKFLOW_SETUP.md)
 
 ## 🎨 Customization
 
-### Stil Değişiklikleri
-`style.css` dosyasında:
-- Renk paleti değiştirme
-- Font family güncelleme
-- Responsive breakpoint'ler
-- Animation ayarları
+### Style Changes in
+`style.css` file:
+- Changing the colour palette
+- Font family update
+- Responsive breakpoints
+- Animation settings
 
-### JavaScript Özelleştirme
-`script.js` dosyasında:
-- Demo görsel listesi
-- Timeout süreleri
-- Validation kuralları
-- Hata mesajları
+### JavaScript Customisation in
+`script.js` file:
+- Demo image list
+- Timeout times
+- Validation rules
+- Error messages
 
-### HTML Yapısı
-`index.html` dosyasında:
-- Form alanları ekleme/çıkarma
-- Meta etiketleri güncelleme
-- SEO optimizasyonu
+### HTML Structure at
+`index.html` file:
+- Add/remove form fields
+- Meta tags update
+- SEO optimisation
 
-## 📱 Responsive Özellikler
+## 📱 Responsive Features
 
 - **Desktop**: Full form layout
-- **Tablet**: Optimized spacing
+- **Tablet**: Optimised spacing
 - **Mobile**: Stacked layout, touch-friendly
 - **Accessibility**: Keyboard navigation, screen reader support
 
-## 🔒 Güvenlik
+## 🔒 Security
 
 - Form validation (client & server side)
 - CORS protection
 - Rate limiting (Qoder side)
-- Input sanitization
-- Error message sanitization
+- Input sanitisation
+- Error message sanitisation
 
 ## 📊 Performance
 
 - **Image lazy loading**
-- **Progressive enhancement**
-- **Optimized CSS/JS**
+- **Progressive improvement**
+- **Optimised CSS/JS**
 - **Compressed assets**
 - **Caching strategies**
 
@@ -188,10 +181,10 @@ Detaylı kurulum için: [QODER_WORKFLOW_SETUP.md](QODER_WORKFLOW_SETUP.md)
 - ✅ Edge 80+
 - ✅ Mobile browsers
 
-## 🚀 Production Deployment
+## 🚀 Production Distribution
 
 ### Static Hosting
-```bash
+``bash
 # Netlify
 netlify deploy --prod --dir .
 
@@ -199,67 +192,61 @@ netlify deploy --prod --dir .
 vercel --prod
 
 # GitHub Pages
-# Push to gh-pages branch
-```
+# push to gh-pages branch
+``
 
 ### Environment Variables
-```javascript
-// Production config
+``javascript
+// Production configuration
 const CONFIG = {
-    WEBHOOK_URL: process.env.QODER_WEBHOOK_URL,
-    API_TIMEOUT: 30000,
-    MAX_RETRIES: 3
+ WEBHOOK_URL: process.env.QODER_WEBHOOK_URL,
+ API_TIMEOUT: 30000,
+ MAX_RETRIES: 3
 };
 ```
 
 ## 📈 Analytics & Monitoring
-
-Önerilen tracking events:
-- `dream_form_submit`: Form gönderimi
-- `dream_generated`: Başarılı görsel oluşturma
-- `dream_download`: Görsel indirme
-- `dream_share`: Paylaşım
-- `error_occurred`: Hata durumları
-
+Recommended tracking events:
+- `dream_form_submit`: Form submission
+- `dream_generated`: Successful image generation
+- `dream_download`: Image download
+- `dream_share`: `share`.
+- `error_occurred`: Error conditions
 ## 🛠️ Troubleshooting
+### Common Problems
+**1. Form not being sent**
+- Check console errors
+- Review request in the Network tab
+- Verify CORS settings
 
-### Yaygın Sorunlar
+**2. Image not loading**
+- Check that the Image URL is valid
+- Test network connection
+- Clear browser cache
+**3. Broken view on mobile**
+- Check the viewport meta tag
+- Test CSS media queries
+- Verify touch events
 
-**1. Form gönderilmiyor**
-- Console error'ları kontrol edin
-- Network tab'da request'i inceleyin
-- CORS ayarlarını doğrulayın
+## 🤝 Contribution
+1. Make fork
+2. Create feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit (`git commit -m 'Add amazing feature'`)
+4. Push (`go push origin feature/amazing-feature`)
+5. Open Pull Request
 
-**2. Görsel yüklenmiyor**
-- Image URL'in geçerli olduğunu kontrol edin
-- Network bağlantısını test edin
-- Browser cache'i temizleyin
+## 📝 Licence
 
-**3. Mobilde görünüm bozuk**
-- Viewport meta tag'ini kontrol edin
-- CSS media queries'i test edin
-- Touch event'leri doğrulayın
+This project is licensed under the MIT Licence. See the [LICENSE](LICENSE) file for details.
 
-## 🤝 Katkıda Bulunma
-
-1. Fork yapın
-2. Feature branch oluşturun (`git checkout -b feature/amazing-feature`)
-3. Commit yapın (`git commit -m 'Add amazing feature'`)
-4. Push edin (`git push origin feature/amazing-feature`)
-5. Pull Request açın
-
-## 📝 License
-
-Bu proje MIT License altında lisanslanmıştır. Detaylar için [LICENSE](LICENSE) dosyasına bakın.
-
-## 📞 Destek
+## 📞 Support
 
 - 📧 Email: support@example.com
 - 💬 Discord: [Dream Community](#)
 - 📚 Docs: [Documentation](#)
 - 🐛 Issues: [GitHub Issues](#)
 
-## 🎉 Teşekkürler
+## 🎉 Thank you
 
 - 🤖 AI Technology: Gemini AI / OpenAI DALL-E
 - 🔗 Automation: Qoder Platform
@@ -269,4 +256,4 @@ Bu proje MIT License altında lisanslanmıştır. Detaylar için [LICENSE](LICEN
 
 ---
 
-**Hayal gücünüzü gerçeğe dönüştürün! ✨**
+     **Turn your imagination into reality! ✨**
